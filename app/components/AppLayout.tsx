@@ -27,6 +27,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-2xl">📅</span>
             <span className="text-xs font-medium">カレンダー</span>
           </Link>
+          <Link href="/shift-request" className={`flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors ${pathname === '/shift-request' ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}>
+            <span className="text-2xl">📋</span>
+            <span className="text-xs font-medium">希望表</span>
+          </Link>
           <Link href="/jobs" className={`flex-1 flex flex-col items-center py-3 gap-0.5 transition-colors ${pathname === '/jobs' ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}>
             <span className="text-2xl">💼</span>
             <span className="text-xs font-medium">バイト</span>

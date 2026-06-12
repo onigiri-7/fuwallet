@@ -38,6 +38,27 @@ export default function Dashboard() {
   const isOver188 = yearlyTotal > ZERO_LIMIT
 
   const remaining = FULL_LIMIT - yearlyTotal
+
+  // ペース予測
+  const startOfYear = new Date(year, 0, 1)
+  const daysElapsed = Math.max(1, Math.floor((now.getTime() - startOfYear.getTime()) / 86_400_000) + 1)
+  const dailyRate = yearlyTotal / daysElapsed
+  const monthlyRate = dailyRate * 30
+
+  const projectDate = (limit: number): Date | null => {
+    if (dailyRate <= 0 || yearlyTotal >= limit) return null
+    const daysLeft = Math.ceil((limit - yearlyTotal) / dailyRate)
+    return new Date(now.getTime() + daysLeft * 86_400_000)
+  }
+
+  const fmtDate = (d: Date) =>
+    `${d.getMonth() + 1}月${d.getDate()}日`
+
+  const projFull   = projectDate(FULL_LIMIT)
+  const projNenkin = projectDate(NENKIN_LIMIT)
+  const thisYearEnd = new Date(year, 11, 31)
+  const willHitFullThisYear   = projFull   !== null && projFull   <= thisYearEnd
+  const willHitNenkinThisYear = projNenkin !== null && projNenkin <= thisYearEnd
   const remainingColor = isOver150 ? 'text-red-500' : remaining < 200_000 ? 'text-yellow-500' : 'text-green-600'
 
   // 全体バー（0〜188万）における各幅
@@ -181,6 +202,46 @@ export default function Dashboard() {
           ※ 2025年税制改正「特定親族特別控除」による
         </p>
       </div>
+
+      {/* ペース予測カード */}
+      {yearlyTotal > 0 && !isOver150 && (
+        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
+          <p className="text-sm font-medium text-gray-700">ペース予測</p>
+          <p className="text-xs text-gray-400">月換算 {fmt(monthlyRate)}/月 のペース</p>
+
+          <div className="space-y-2">
+            {/* 年金特例ライン */}
+            <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${willHitNenkinThisYear ? 'bg-orange-50' : 'bg-gray-50'}`}>
+              <div>
+                <p className="text-xs font-medium text-gray-600">128万・年金特例ライン</p>
+                {willHitNenkinThisYear && projNenkin ? (
+                  <p className="text-xs text-orange-500 mt-0.5">⚠️ {fmtDate(projNenkin)}頃に達する見込み</p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-0.5">今年中には達しない見込み</p>
+                )}
+              </div>
+              <p className={`text-sm font-bold ${willHitNenkinThisYear ? 'text-orange-500' : 'text-gray-400'}`}>
+                {fmt(NENKIN_LIMIT)}
+              </p>
+            </div>
+
+            {/* 150万ライン */}
+            <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${willHitFullThisYear ? 'bg-red-50' : 'bg-gray-50'}`}>
+              <div>
+                <p className="text-xs font-medium text-gray-600">150万・国保加入ライン</p>
+                {willHitFullThisYear && projFull ? (
+                  <p className="text-xs text-red-500 mt-0.5">⚠️ {fmtDate(projFull)}頃に達する見込み</p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-0.5">今年中には達しない見込み</p>
+                )}
+              </div>
+              <p className={`text-sm font-bold ${willHitFullThisYear ? 'text-red-500' : 'text-gray-400'}`}>
+                {fmt(FULL_LIMIT)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 今月 */}
       <div className="bg-white rounded-2xl shadow-sm p-5">
